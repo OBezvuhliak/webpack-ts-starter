@@ -12,7 +12,9 @@ const config: Configuration & Record<string, any> = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle-[hash].js',
+    sourceMapFilename: "[name].js.map"
   },
+  devtool: "source-map",
   target: ['web', 'es2015'],
   resolve: {
     extensions: ['.ts', '.tsx', '.js'],
@@ -25,6 +27,7 @@ const config: Configuration & Record<string, any> = {
     compress: true,
     port: 3000,
     hot: false,
+    open: true,
   },
   module: {
     rules: [

@@ -1,9 +1,11 @@
 {
-  "name": "webpack-ts-starter",
+  "name": "slot",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "pixi.js": "^6.2.2"
+  },
   "devDependencies": {
     "@types/mini-css-extract-plugin": "^2.4.0",
     "@types/node": "^16.11.12",
@@ -52,5 +54,18 @@
   },
   "engines": {
     "node": ">=14.0.0"
-  }
+  },
+  "description": "Starter for development typescript application with webpack. [Russian](./docs/ru.md)",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexandr90h/slot-app.git"
+  },
+  "author": "alexandr90h",
+  "bugs": {
+    "url": "https://github.com/alexandr90h/slot-app/issues"
+  },
+  "homepage": "https://github.com/alexandr90h/slot-app#readme"
 }
