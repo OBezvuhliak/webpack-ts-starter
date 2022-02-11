@@ -24,7 +24,6 @@ export class Button extends PIXI.Container {
     this.children.forEach(sprite => {
       sprite.visible = !sprite.visible
     })
-
   }
 
   protected addSprite(textures: TextureObj[], position: Position): void {
