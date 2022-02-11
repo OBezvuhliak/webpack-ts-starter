@@ -3,7 +3,7 @@ import CopyWebpackPlugin from 'copy-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import  MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import * as path from 'path';
-import { Configuration } from 'webpack';
+import { Configuration,ProvidePlugin } from 'webpack';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const config: Configuration & Record<string, any> = {
@@ -63,6 +63,9 @@ const config: Configuration & Record<string, any> = {
     ],
   },
   plugins: [
+    new ProvidePlugin({
+      PIXI: "pixi.js",
+    }),
     new CleanWebpackPlugin(),
     new CopyWebpackPlugin({
       patterns: [

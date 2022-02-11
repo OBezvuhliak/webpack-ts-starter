@@ -12,8 +12,9 @@ export class CreateSlot extends PIXI.Container {
     const sprite = new PIXI.Sprite(texture);
     sprite.anchor.set(0.5);
     this.addChild(sprite)
-    this.width=1;
-    this.height=1;
+    sprite.width=100;
+    sprite.height=100;
+    sprite.visible=false;
     this.x = position.x;
     this.y = position.y;
   }

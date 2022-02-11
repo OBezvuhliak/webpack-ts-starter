@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "name": "lemon",
+    "url": "/assets/images/lemon.png"
+  },
+  {
+    "id": 2,
+    "name": "cherry",
+    "url": "/assets/images/cherry.png"
+  },
+  {
+    "id": 3,
+    "name": "strawberry",
+    "url": "/assets/images/strawberry.png"
+  }
+]
