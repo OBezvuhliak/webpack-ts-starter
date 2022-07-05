@@ -15,7 +15,7 @@ export class Data {
   public queue: Map<any, any>;
 
   constructor() {
-    makeObservable(this, { dockActivation: observable });
+    makeObservable(this, { dockActivation: observable, countShips: observable });
     this.docks = new Map();
     this.ships = new Map();
     this.dockActivation = "";

@@ -8,7 +8,8 @@ export class Actions {
 
   constructor(data: Data) {
     makeObservable(this, {
-      setDockActivation: action
+      setDockActivation: action,
+      setCountShips: action,
     })
     this.data = data;
   }
@@ -36,6 +37,7 @@ export class Actions {
   public setQueue(key: string, ship: ShipComponent): void {
     this.data.queue.set(key, ship);
   }
+
   public deleteShipFromQueue(keyShip: string): void {
     this.data.queue.delete(keyShip);
   }

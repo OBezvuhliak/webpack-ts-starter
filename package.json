@@ -58,16 +58,5 @@
     "node": ">=14.0.0"
   },
   "description": "Starter for development typescript application with webpack.",
-  "directories": {
-    "doc": "docs"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/alexandr90h/slot-app.git"
-  },
-  "author": "alexandr90h",
-  "bugs": {
-    "url": "https://github.com/alexandr90h/slot-app/issues"
-  },
-  "homepage": "https://github.com/alexandr90h/slot-app#readme"
+  "author": "alexandr90h"
 }
