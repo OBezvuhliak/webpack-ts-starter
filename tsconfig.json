@@ -8,6 +8,7 @@
       "dom"
     ],
     "resolveJsonModule": true,
+    "useDefineForClassFields": true,
     // "allowJs": true,                       /* Allow javascript files to be compiled. */
     // "checkJs": true,                       /* Report errors in .js files. */
     // "jsx": "preserve",                     /* Specify JSX code generation: 'preserve', 'react-native', or 'react'. */
@@ -61,7 +62,17 @@
 
     /* Experimental Options */
     "experimentalDecorators": true,          /* Enables experimental support for ES7 decorators. */
-    "emitDecoratorMetadata": true            /* Enables experimental support for emitting type metadata for decorators. */
+    "emitDecoratorMetadata": true,            /* Enables experimental support for emitting type metadata for decorators. */
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "strictNullChecks": true,
+    "downlevelIteration": true,
+    "incremental": true,
+    "alwaysStrict": true,
+    "noImplicitReturns": true,
+    "jsx": "react",
+    "allowJs": true
+
   },
   "exclude": [
     "node_modules"
