@@ -1,6 +1,6 @@
 {
   "name": "port",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
@@ -58,5 +58,13 @@
     "node": ">=14.0.0"
   },
   "description": "Starter for development typescript application with webpack.",
-  "author": "alexandr90h"
+  "author": "alexandr90h",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OBezvuhliak/webpack-ts-starter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OBezvuhliak/webpack-ts-starter/issues"
+  },
+  "homepage": "https://github.com/OBezvuhliak/webpack-ts-starter#readme"
 }
