@@ -1,11 +1,11 @@
 import TWEEN from '@tweenjs/tween.js';
+import { values } from "mobx";
 import * as PIXI from 'pixi.js';
 import { Container, Sprite } from "pixi.js";
 
 import { PORT_HEIGHT, PORT_WIDTH } from "../../constants/PortConstants";
 import { portActions, portProps } from "../../index";
 import { TDocksMap } from "../../store/Data";
-import { values } from "mobx";
 
 export interface IShipProps {
   isFull: boolean;
@@ -78,29 +78,28 @@ export class ShipComponent extends Sprite {
 
   private goToDock(key: string): void {
     const currentDock = portProps.getDocks.get(key);
-    if (currentDock) {
-      const coordsStart = this._initCoords;
-      const coordsPassage = { x: 320, y: this._initCoords.y };
-      const tween1 = new TWEEN.Tween(coordsStart); // Create a new tween that modifies 'coords'.
-      const tween2 = new TWEEN.Tween(coordsPassage); // Create a new tween that modifies 'coords'.
-      tween1.to({ x: 320 }, 4000) // Move to (300, 200) in 1 second.
-        // .easing(TWEEN.Easing.Quadratic.Out) // Use an easing function to make the animation smooth.
-        .onUpdate(() => {
-          this.x = coordsStart.x;
-        });
-      tween2.to(currentDock.coordsJetty, 1500) // Move to (300, 200) in 1 second.
-        // .easing(TWEEN.Easing.Quadratic.Out) // Use an easing function to make the animation smooth.
-        .onUpdate(() => {
-          this.x = coordsPassage.x;
-          this.y = coordsPassage.y;
-        }).onComplete(() => {
-        portProps.getDocks.get(key).handlerOverload(this.name);
-        // portActions.setDockActivation(key)
-      });
 
-      // .start(); // Start the tween immediately.
-      tween1.chain(tween2);
-      tween1.start();
+    const x0 = this._initCoords.x;
+    const y0 = this._initCoords.y;
+    const xA = [320, currentDock.coordsJetty.x];
+    const yA = [this._initCoords.y, currentDock.coordsJetty.y];
+    const obj = { x: x0, y: y0, old: { x: x0, y: y0 } }
+
+    if (currentDock) {
+      const tween = new TWEEN.Tween(obj);
+      tween.to({ x: xA, y: yA }, 5000)
+        // .easing(TWEEN.Easing.Quadratic.Out)
+        .onUpdate((object) => {
+          // console.log(object);
+          this.x = object.x;
+          this.y = object.y;
+          object.old.x = object.x
+          object.old.y = object.y
+        }).interpolation(TWEEN.Interpolation.CatmullRom).onComplete(() => {
+        portProps.getDocks.get(key).handlerOverload(this.name);
+        TWEEN.remove(tween);
+      });
+      tween.start();
     }
   }
 
@@ -113,7 +112,7 @@ export class ShipComponent extends Sprite {
         this.nomberOfQueue--;
       }
     } else {
-      coords = this._initCoords;
+      coords = { x: this._initCoords.x, y: this._initCoords.y };
       let number = 0;
       portProps.queue.forEach((value) => {
         if (value.isFull === isFull) {
@@ -150,30 +149,28 @@ export class ShipComponent extends Sprite {
   }
 
   public goToEnd(coordsJetty: ICoords): void {
-    const coordsStart = { x: coordsJetty.x, y: coordsJetty.y };
-    const coordsPassage = { x: 320, y: this._initCoords.y };
-    const tween1 = new TWEEN.Tween(coordsStart); // Create a new tween that modifies 'coords'.
-    const tween2 = new TWEEN.Tween(coordsPassage); // Create a new tween that modifies 'coords'.
-    tween1.to({ x: 320, y: this._initCoords.y }, 1500) // Move to (300, 200) in 1 second.
-      // .easing(TWEEN.Easing.Quadratic.Out) // Use an easing function to make the animation smooth.
-      .onUpdate(() => {
-        this.x = coordsStart.x;
-        this.y = coordsStart.y;
+    const x0 = coordsJetty.x;
+    const y0 = coordsJetty.y;
+    const xA = [320, this._initCoords.x];
+    const yA = [this._initCoords.y, this._initCoords.y];
+    const obj = { x: x0, y: y0, old: { x: x0, y: y0 } }
+
+    const tween = new TWEEN.Tween(obj);
+    tween.to({ x: xA, y: yA }, 5000)
+      .onUpdate((object) => {
+        this.x = object.x;
+        this.y = object.y;
+        object.old.x = object.x
+        object.old.y = object.y
+      })
+      .interpolation(TWEEN.Interpolation.CatmullRom)
+      .onComplete(() => {
+        portActions.deleteShip(this.name);
+        const parent = this.parent;
+        parent.removeChild(this);
+        TWEEN.removeAll;
       });
-    tween2.to({
-      x: PORT_WIDTH + ShipComponent.size.width,
-      y: this._initCoords.y
-    }, 4000) // Move to (300, 200) in 1 second.
-      .onUpdate(() => {
-        this.x = coordsPassage.x;
-        this.y = coordsPassage.y;
-      }).onComplete(() => {
-      portActions.deleteShip(this.name);
-      const parent = this.parent;
-      parent.removeChild(this);
-    });
-    tween1.chain(tween2);
-    tween1.start();
+    tween.start();
   }
 
   public goToDockFromQueue(): void {
