@@ -55,12 +55,19 @@ for (let i = 0; i < 4; i++) {
   store.actions.setDocks(docksMap);
 }
 const createShip = (): void => {
-  portActions.setCountShips(portProps.countShip + 1);
   const shipProps: IShipProps = {
     isFull: animUtils.shipLoading(),
     name: `ship_${portProps.countShip}`,
   }
-  const newShip = new ShipComponent(stageShips, shipProps);
+
+  if (shipProps.isFull) {
+    portActions.setCountFullShips(portProps.countFullShip + 1);
+  } else {
+    portActions.setCountEmptyShips(portProps.countEmptyShip + 1);
+  }
+  portActions.setCountShips(portProps.countShip + 1);
+
+  const newShip = new ShipComponent(stageShips, shipProps,app);
   stageShips.addChild(newShip);
   const shipsMap = store.props.getShips;
   shipsMap.set(newShip.name, newShip);
@@ -70,12 +77,9 @@ const queueComponent = new QueueComponent();
 const descriptionTextComponent = new DescriptionTextComponent();
 const initPixi = (): void => {
   requestAnimationFrame(initPixi);
+  app.stage.addChild(stageShips);
   app.stage.addChild(stagePassage);
   app.stage.addChild(stageDocks);
-  app.stage.addChild(stageShips);
-  // app.loader
-  //   .add('titanOne', '../assets/fonts/Titan_One/Unnamed.xml')
-  //   .load(onAssetsLoaded);
   app.stage.addChild(descriptionTextComponent);
 }
 app.loader

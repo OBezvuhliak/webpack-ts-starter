@@ -13,6 +13,8 @@ export class Data {
   public dockActivation: string;
   public countShips: number;
   public queue: Map<any, any>;
+  public countFullShips: number;
+  public countEmptyShips: number;
 
   constructor() {
     makeObservable(this, { dockActivation: observable, countShips: observable });
@@ -20,6 +22,8 @@ export class Data {
     this.ships = new Map();
     this.dockActivation = "";
     this.countShips = 0;
+    this.countFullShips = 0;
+    this.countEmptyShips = 0;
     this.queue = new Map();
   }
 }

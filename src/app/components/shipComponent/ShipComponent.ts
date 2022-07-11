@@ -1,11 +1,19 @@
+import * as particles from '@pixi/particle-emitter'
+import { upgradeConfig } from "@pixi/particle-emitter";
 import TWEEN from '@tweenjs/tween.js';
-import { values } from "mobx";
 import * as PIXI from 'pixi.js';
-import { Container, Sprite } from "pixi.js";
+import {
+  Application,
+  Container,
+  IPoint,
+  ParticleContainer,
+  Point,
+  Sprite,
+} from "pixi.js";
 
-import { PORT_HEIGHT, PORT_WIDTH } from "../../constants/PortConstants";
+import { COORDS_QUEUE_EMPTY, COORDS_QUEUE_FULL, PORT_HEIGHT, PORT_WIDTH } from "../../constants/PortConstants";
 import { portActions, portProps } from "../../index";
-import { TDocksMap } from "../../store/Data";
+import shipEmitter from "./shipEmitter.json";
 
 export interface IShipProps {
   isFull: boolean;
@@ -18,41 +26,62 @@ export interface ICoords {
 }
 
 
-export class ShipComponent extends Sprite {
+export class ShipComponent extends Container {
   public static readonly size = { width: 100, height: 50 };
   private readonly _initCoords = { x: PORT_WIDTH + ShipComponent.size.width / 2, y: PORT_HEIGHT / 2 }
 
   public isFull: boolean;
 
   public isAction: boolean;
-  public nomberOfQueue: number | undefined;
+  public numberOfQueue: number | undefined;
 
   private _shipContainer: Container;
-
   public currentDock = "";
   public fullSprite: Sprite;
   public emptySprite: Sprite;
+  private emitter: particles.Emitter;
+  public particleContainer: ParticleContainer;
+  private _app: Application;
 
-  constructor(shipContainer: Container, shipProps: IShipProps) {
+
+  constructor(shipContainer: Container, shipProps: IShipProps, app: Application) {
     super();
     this.isFull = shipProps.isFull;
     this.name = shipProps.name;
     this._shipContainer = shipContainer;
+    this._app = app;
     this.isAction = false;
     const fullBG = PIXI.Texture.from('../assets/images/full-ship.png');
     const emptyBG = PIXI.Texture.from('../assets/images/empty-ship.png');
+    const trailTexture = PIXI.Texture.from('../assets/images/point.png');
     this.fullSprite = new Sprite(fullBG);
     this.emptySprite = new Sprite(emptyBG);
+    this.particleContainer = new PIXI.ParticleContainer();
+    // this._particleContainer.width = ShipComponent.size.width;
+    // this._particleContainer.height = ShipComponent.size.height;
+    this.particleContainer.name = this.name;
+    this.particleContainer.setProperties({
+      scale: true,
+      position: true,
+      rotation: true,
+      uvs: true,
+      alpha: true,
+    });
+
     this.fullSprite.anchor.set(0.5);
     this.emptySprite.anchor.set(0.5);
+    this._shipContainer.addChild(this.particleContainer);
     this.addChild(this.emptySprite);
     this.addChild(this.fullSprite);
+    this.emitter = new particles.Emitter(this.particleContainer, upgradeConfig(shipEmitter, [trailTexture]));
+
     if (shipProps.isFull) {
       this.fullSprite.alpha = 1
     } else {
       this.fullSprite.alpha = 0
     }
     this.init();
+    this.updateEmitter();
   }
 
   protected init(): void {
@@ -78,7 +107,7 @@ export class ShipComponent extends Sprite {
 
   private goToDock(key: string): void {
     const currentDock = portProps.getDocks.get(key);
-
+    this.emitter.emit = true;
     const x0 = this._initCoords.x;
     const y0 = this._initCoords.y;
     const xA = [320, currentDock.coordsJetty.x];
@@ -88,64 +117,80 @@ export class ShipComponent extends Sprite {
     if (currentDock) {
       const tween = new TWEEN.Tween(obj);
       tween.to({ x: xA, y: yA }, 5000)
-        // .easing(TWEEN.Easing.Quadratic.Out)
         .onUpdate((object) => {
-          // console.log(object);
           this.x = object.x;
           this.y = object.y;
           object.old.x = object.x
           object.old.y = object.y
-        }).interpolation(TWEEN.Interpolation.CatmullRom).onComplete(() => {
-        portProps.getDocks.get(key).handlerOverload(this.name);
-        TWEEN.remove(tween);
-      });
+        })
+        .interpolation(TWEEN.Interpolation.CatmullRom)
+        .onComplete(() => {
+          portProps.getDocks.get(key).handlerOverload(this.name);
+          TWEEN.remove(tween);
+          this.emitter.emit = false;
+        });
       tween.start();
     }
   }
 
-  public goToQueue(isFull: boolean, initCoords?: ICoords): void {
-    let coordsQueue: ICoords;
-    let coords;
-    if (initCoords) {
-      coords = initCoords;
-      if (this.nomberOfQueue) {
-        this.nomberOfQueue--;
+  public goToQueue(isFull: boolean): void {
+    let number = 0;
+    portProps.queue.forEach((value) => {
+      if (value.isFull === isFull) {
+        number++;
       }
-    } else {
-      coords = { x: this._initCoords.x, y: this._initCoords.y };
-      let number = 0;
-      portProps.queue.forEach((value) => {
-        if (value.isFull === isFull) {
-          number++;
-        }
-      });
-      this.nomberOfQueue = number + 1;
-    }
-
-    if (this.nomberOfQueue) {
+    });
+    this.numberOfQueue = number + 1;
+    const coords = { x: this._initCoords.x, y: this._initCoords.y };
+    let coordsQueue: ICoords;
+    if (this.numberOfQueue) {
       if (isFull) {
         coordsQueue = {
-          x: (320 + ShipComponent.size.width / 2) + (this.nomberOfQueue - 1) * (ShipComponent.size.width + 10),
-          y: 315 + ShipComponent.size.height / 2
+          x: COORDS_QUEUE_FULL.x + (this.numberOfQueue - 1) * (ShipComponent.size.width + 10),
+          y: COORDS_QUEUE_FULL.y
         }
       } else {
         coordsQueue = {
-          x: (320 + ShipComponent.size.width / 2) + (this.nomberOfQueue - 1) * (ShipComponent.size.width + 10),
-          y: 435 + ShipComponent.size.height / 2
+          x: COORDS_QUEUE_EMPTY.x + (this.numberOfQueue - 1) * (ShipComponent.size.width + 10),
+          y: COORDS_QUEUE_EMPTY.y
         }
       }
-      const tween = new TWEEN.Tween(coords); // Create a new tween that modifies 'coords'.
-      tween.to(coordsQueue, 4000) // Move to (300, 200) in 1 second.
-        // .easing(TWEEN.Easing.Quadratic.Out) // Use an easing function to make the animation smooth.
+      const tween = new TWEEN.Tween(coords);
+      tween.to(coordsQueue, 4000)
         .onUpdate(() => {
           this.x = coords.x;
           this.y = coords.y;
-        }).onComplete(() => {
+        })
+        .interpolation(TWEEN.Interpolation.CatmullRom)
+        .onComplete(() => {
+          this.isAction = false;
+          const countCurrentQueue = this.isFull ? portProps.countShipInQueueFull : portProps.countShipInQueueEmpty;
+          if (this.numberOfQueue && (this.numberOfQueue - countCurrentQueue) > 0) {
+            this.advanceInLine(1);
+          }
+          this.emitter.emit = false;
+        })
+        .start();
+    }
+  }
+
+  public advanceInLine(onSteps: number): void {
+    this.isAction = true;
+    if (this.numberOfQueue) {
+      this.numberOfQueue--;
+    }
+    const coords = { x: this.x };
+    const coordsQueue = { x: this.x - (ShipComponent.size.width + 10) * onSteps };
+    const tween = new TWEEN.Tween(coords);
+    tween.to(coordsQueue, 1000)
+      .onUpdate(() => {
+        this.x = coords.x;
+      })
+      .onComplete(() => {
         this.isAction = false;
       })
-        .start() // Start the tween immediately.
+      .start();
 
-    }
   }
 
   public goToEnd(coordsJetty: ICoords): void {
@@ -154,7 +199,7 @@ export class ShipComponent extends Sprite {
     const xA = [320, this._initCoords.x];
     const yA = [this._initCoords.y, this._initCoords.y];
     const obj = { x: x0, y: y0, old: { x: x0, y: y0 } }
-
+    this.emitter.emit = true;
     const tween = new TWEEN.Tween(obj);
     tween.to({ x: xA, y: yA }, 5000)
       .onUpdate((object) => {
@@ -167,35 +212,51 @@ export class ShipComponent extends Sprite {
       .onComplete(() => {
         portActions.deleteShip(this.name);
         const parent = this.parent;
-        parent.removeChild(this);
+        parent.removeChild(this, this.particleContainer);
         TWEEN.removeAll;
       });
     tween.start();
   }
 
   public goToDockFromQueue(): void {
+    this.emitter.emit = true;
     portActions.deleteShipFromQueue(this.name);
     const currentDock = portProps.getDocks.get(this.currentDock);
-    const coordsStart = { x: this.x, y: this.y };
-    const coordsPassage = { x: 320, y: this._initCoords.y };
-    const tween1 = new TWEEN.Tween(coordsStart);
-    const tween2 = new TWEEN.Tween(coordsPassage);
-    tween1.to({ x: 320, y: this._initCoords.y }, 1000)
-      .onUpdate(() => {
-        this.x = coordsStart.x;
-        this.y = coordsStart.y;
+    const x0 = this.x;
+    const y0 = this.y;
+    const xA = [200, currentDock.coordsJetty.x];
+    const yA = [this.isFull ? COORDS_QUEUE_FULL.y : COORDS_QUEUE_EMPTY.y, currentDock.coordsJetty.y];
+    const obj = { x: x0, y: y0, old: { x: x0, y: y0 } }
+
+    const tween = new TWEEN.Tween(obj);
+    tween.to({ x: xA, y: yA }, 1500)
+      .onUpdate((object) => {
+        this.x = object.x;
+        this.y = object.y;
+        object.old.x = object.x;
+        object.old.y = object.y;
+      })
+      .interpolation(TWEEN.Interpolation.CatmullRom)
+      .onComplete(() => {
+        portProps.getDocks.get(this.currentDock).handlerOverload(this.name);
+        TWEEN.remove(tween);
+        this.emitter.emit = false;
       });
-    tween2.to({
-      x: currentDock.coordsJetty.x,
-      y: currentDock.coordsJetty.y
-    }, 1000)
-      .onUpdate(() => {
-        this.x = coordsPassage.x;
-        this.y = coordsPassage.y;
-      }).onComplete(() => {
-      portProps.getDocks.get(this.currentDock).handlerOverload(this.name);
-    });
-    tween1.chain(tween2);
-    tween1.start();
+    tween.start();
+  }
+
+  private updateEmitter = (): void => {
+    console.log("updateEmitter")
+    this._app.ticker.add(this.onTick, this);
+  };
+
+  private onTick(): void {
+    const p: IPoint = this.particleContainer.toLocal(
+      new Point(0, 0),
+      this,
+    );
+    this.emitter.spawnPos.x = p.x;
+    this.emitter.spawnPos.y = p.y;
+    this.emitter.update(this._app.ticker.deltaMS * 0.001);
   }
 }

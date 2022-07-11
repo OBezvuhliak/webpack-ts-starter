@@ -14,13 +14,14 @@ export class DescriptionTextComponent extends Container {
 
   public init(): void {
     this.width = 300;
-    this.x = PORT_WIDTH - 300;
+    this.x = PORT_WIDTH;
     this.y = 0;
-    this.bitmapFontText = new BitmapText('1', {
+    this.bitmapFontText = new BitmapText(`${portProps.countShip} : ( ${portProps.countFullShip} | ${portProps.countEmptyShip} )`, {
       fontName: 'TitanOne',
       fontSize: 55,
-      align: 'left'
+      align: 'right'
     });
+    this.bitmapFontText.anchor.x = 1;
     // bitmapFontText.x = 50;
     // bitmapFontText.y = 200;
     this.addChild(this.bitmapFontText);
@@ -29,7 +30,7 @@ export class DescriptionTextComponent extends Container {
   private addReactions(): void {
     reaction(() => portProps.countShip, (countShip) => {
       if (this.bitmapFontText) {
-        this.bitmapFontText.text = countShip.toString();
+        this.bitmapFontText.text = `${countShip} : ( ${portProps.countFullShip} | ${portProps.countEmptyShip} )`;
       }
     })
   }

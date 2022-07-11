@@ -19,7 +19,7 @@ export class QueueComponent {
     portProps.queue.forEach((ship) => {
       if (ship.isFull === filling && !ship.isAction) {
         ship.isAction = true;
-        ship.goToQueue(filling, { x: ship.x, y: ship.y })
+        ship.advanceInLine(1);
       }
     });
   }

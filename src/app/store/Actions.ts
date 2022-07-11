@@ -33,7 +33,12 @@ export class Actions {
   public setCountShips(number: number): void {
     this.data.countShips = number;
   }
-
+  public setCountFullShips(number: number): void {
+    this.data.countFullShips = number;
+  }
+  public setCountEmptyShips(number: number): void {
+    this.data.countEmptyShips = number;
+  }
   public setQueue(key: string, ship: ShipComponent): void {
     this.data.queue.set(key, ship);
   }

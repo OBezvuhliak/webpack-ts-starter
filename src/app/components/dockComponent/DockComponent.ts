@@ -39,7 +39,7 @@ export class DockComponent extends Container {
 
   }
 
-  public handlerOverload(shipName:string): void {
+  public handlerOverload(shipName: string): void {
     const alphaFull = { a: 1, b: 0 };
     const alphaEmpty = { a: 0, b: 1 };
     const currentShip = portProps.getShips.get(shipName);
@@ -55,6 +55,7 @@ export class DockComponent extends Container {
         this.isFull = currentShip.isFull;
         currentShip.isFull = !currentShip.isFull;
         currentShip.angle = 180;
+        currentShip.particleContainer.angle = 180;
         currentShip.goToEnd(this.coordsJetty);
       }).start();
     } else console.error("No currentShip");

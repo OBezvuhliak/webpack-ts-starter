@@ -34,7 +34,8 @@
           {
             "selector": "default",
             "format": [
-              "camelCase"
+              "camelCase",
+              "UPPER_CASE"
             ],
             "leadingUnderscore": "allow",
             "trailingUnderscore": "allow"
