@@ -14,7 +14,7 @@ const config: Configuration & Record<string, any> = {
     filename: 'bundle-[hash].js',
     sourceMapFilename: "[name].js.map"
   },
-  devtool: "source-map",
+  // devtool: "source-map",
   target: ['web', 'es2015'],
   resolve: {
     extensions: ['.ts', '.tsx', '.js'],
